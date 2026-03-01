@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SuperNetworkAI — Find Your People</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=Cabinet+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --cream: #faf7f2;
+  --cream2: #f2ede4;
+  --paper: #ede8df;
+  --ink: #1a1208;
+  --ink2: #2d2416;
+  --brown: #6b4f35;
+  --terra: #c4622d;
+  --terra2: #e8825a;
+  --sage: #4a7c5e;
+  --sage2: #6aab88;
+  --gold: #d4a843;
+  --violet: #7b5ea7;
+  --border: rgba(26,18,8,0.12);
+  --border2: rgba(26,18,8,0.06);
+  --muted: rgba(26,18,8,0.45);
+  --shadow: 0 2px 20px rgba(26,18,8,0.08);
+  --shadow-lg: 0 8px 40px rgba(26,18,8,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--cream);
+  color:var(--ink);
+  font-family:'Cabinet Grotesk', sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Grain overlay */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:999; pointer-events:none;
+  opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--cream2); }
+::-webkit-scrollbar-thumb { background:var(--paper); border-radius:3px; }
+
+/* ── LAYOUT ── */
+.app { display:flex; min-height:100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width:260px; min-height:100vh;
+  background:var(--ink2);
+  display:flex; flex-direction:column;
+  padding:28px 20px;
+  position:fixed; left:0; top:0; bottom:0; z-index:100;
+}
+
+/* Decorative sidebar top accent */
+.sidebar::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--terra), var(--gold), var(--sage));
+}
+
+.logo {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:40px; padding:0 4px;
+}
+.logo-mark {
+  width:38px; height:38px; border-radius:10px;
+  background:linear-gradient(135deg, var(--terra), var(--gold));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Fraunces', serif; font-size:20px; font-weight:900;
+  color:var(--cream); flex-shrink:0; letter-spacing:-1px;
+}
+.logo-text {
+  font-family:'Fraunces', serif; font-weight:700; font-size:16px;
+  color:var(--cream); line-height:1.1;
+}
+.logo-text span { color:var(--terra2); }
+
+/* Nav */
+.nav { display:flex; flex-direction:column; gap:3px; flex:1; }
+.nav-section-label {
+  font-size:10px; font-weight:700; letter-spacing:0.12em;
+  color:rgba(250,247,242,0.3); padding:0 10px; margin:16px 0 6px;
+  text-transform:uppercase;
+}
+.nav-item {
+  display:flex; align-items:center; gap:12px;
+  padding:11px 12px; border-radius:10px; cursor:pointer;
+  transition:all 0.2s; font-size:14px; font-weight:600;
+  color:rgba(250,247,242,0.55); border:none; background:none;
+  text-align:left; width:100%; position:relative;
+}
+.nav-item:hover { background:rgba(250,247,242,0.07); color:var(--cream); }
+.nav-item.active {
+  background:rgba(196,98,45,0.2);
+  color:var(--terra2);
+}
+.nav-item.active::before {
+  content:''; position:absolute; left:0; top:25%; bottom:25%;
+  width:3px; border-radius:0 2px 2px 0;
+  background:var(--terra2);
+}
+.nav-icon { font-size:17px; width:22px; text-align:center; }
+.nav-badge {
+  margin-left:auto; background:var(--terra); color:var(--cream);
+  font-size:10px; font-weight:800; padding:2px 7px; border-radius:20px;
+  min-width:20px; text-align:center;
+}
+
+/* Sidebar bottom */
+.sidebar-divider { height:1px; background:rgba(250,247,242,0.08); margin:16px 0; }
+.sidebar-user {
+  display:flex; align-items:center; gap:12px; padding:12px;
+  background:rgba(250,247,242,0.06); border-radius:12px;
+  cursor:pointer; transition:all 0.2s; border:1px solid rgba(250,247,242,0.08);
+}
+.sidebar-user:hover { background:rgba(250,247,242,0.1); }
+.sidebar-user-info { flex:1; min-width:0; }
+.sidebar-user-name { font-size:13px; font-weight:700; color:var(--cream); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sidebar-user-role { font-size:11px; color:rgba(250,247,242,0.4); margin-top:1px; }
+
+/* MAIN */
+.main { margin-left:260px; flex:1; padding:36px 40px; min-height:100vh; background:var(--cream); }
+
+/* AVATAR */
+.avatar {
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-weight:800; color:var(--cream); flex-shrink:0;
+  font-family:'Fraunces', serif; letter-spacing:-0.5px;
+  position:relative;
+}
+.avatar-36 { width:36px; height:36px; font-size:13px; }
+.avatar-44 { width:44px; height:44px; font-size:16px; }
+.avatar-56 { width:56px; height:56px; font-size:20px; }
+.avatar-80 { width:80px; height:80px; font-size:28px; }
+.av-terra { background:linear-gradient(135deg, var(--terra), var(--terra2)); }
+.av-sage { background:linear-gradient(135deg, var(--sage), var(--sage2)); }
+.av-violet { background:linear-gradient(135deg, var(--violet), #a07dcf); }
+.av-gold { background:linear-gradient(135deg, var(--gold), #e8c068); }
+.av-brown { background:linear-gradient(135deg, var(--brown), #9b7355); }
+.av-ink { background:linear-gradient(135deg, var(--ink), var(--ink2)); }
+
+/* PAGE HEADER */
+.page-header { margin-bottom:32px; display:flex; align-items:flex-start; justify-content:space-between; }
+.page-title {
+  font-family:'Fraunces', serif; font-size:32px; font-weight:700;
+  line-height:1.1; margin-bottom:6px; letter-spacing:-0.5px;
+}
+.page-sub { color:var(--muted); font-size:15px; }
+
+/* BUTTONS */
+.btn {
+  padding:10px 20px; border-radius:10px; font-weight:700; font-size:14px;
+  cursor:pointer; transition:all 0.2s; border:none; font-family:'Cabinet Grotesk', sans-serif;
+  display:inline-flex; align-items:center; gap:8px; letter-spacing:0.01em;
+}
+.btn-primary { background:var(--terra); color:var(--cream); }
+.btn-primary:hover { background:#b0571f; transform:translateY(-1px); box-shadow:0 4px 16px rgba(196,98,45,0.3); }
+.btn-secondary { background:var(--cream2); color:var(--ink); border:1px solid var(--border); }
+.btn-secondary:hover { background:var(--paper); }
+.btn-ghost { background:transparent; color:var(--muted); }
+.btn-ghost:hover { color:var(--ink); background:var(--cream2); }
+.btn-sage { background:var(--sage); color:var(--cream); }
+.btn-sage:hover { background:#3d6b50; }
+.btn-sm { padding:7px 14px; font-size:12px; border-radius:8px; }
+.btn:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
+
+/* CARDS */
+.card {
+  background:#fff; border:1px solid var(--border);
+  border-radius:16px; padding:24px;
+  box-shadow:var(--shadow);
+  transition:all 0.25s;
+}
+.card:hover { box-shadow:var(--shadow-lg); }
+
+/* TAGS */
+.tag {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;
+}
+.tag-terra { background:rgba(196,98,45,0.1); color:var(--terra); border:1px solid rgba(196,98,45,0.2); }
+.tag-sage { background:rgba(74,124,94,0.1); color:var(--sage); border:1px solid rgba(74,124,94,0.2); }
+.tag-gold { background:rgba(212,168,67,0.12); color:#a07820; border:1px solid rgba(212,168,67,0.25); }
+.tag-violet { background:rgba(123,94,167,0.1); color:var(--violet); border:1px solid rgba(123,94,167,0.2); }
+.tag-muted { background:var(--cream2); color:var(--muted); border:1px solid var(--border); }
+.tag-brown { background:rgba(107,79,53,0.1); color:var(--brown); border:1px solid rgba(107,79,53,0.2); }
+
+/* INPUTS */
+.input {
+  width:100%; padding:11px 14px;
+  background:#fff; border:1.5px solid var(--border);
+  border-radius:10px; color:var(--ink); font-size:14px;
+  font-family:'Cabinet Grotesk', sans-serif; outline:none; transition:all 0.2s;
+}
+.input:focus { border-color:var(--terra); box-shadow:0 0 0 3px rgba(196,98,45,0.1); }
+.input::placeholder { color:var(--muted); }
+textarea.input { resize:vertical; min-height:80px; line-height:1.65; }
+select.input { cursor:pointer; }
+.input-group { display:flex; flex-direction:column; gap:6px; }
+.label {
+  font-size:11px; font-weight:700; color:var(--muted);
+  letter-spacing:0.08em; text-transform:uppercase;
+}
+
+/* GRID */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+
+/* ── ONBOARDING ── */
+.onboarding-bg {
+  min-height:100vh; display:flex; background:var(--cream);
+  position:relative; overflow:hidden;
+}
+/* decorative side panel */
+.ob-left {
+  width:380px; flex-shrink:0;
+  background:var(--ink2); padding:48px 40px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  position:relative; overflow:hidden;
+}
+.ob-left::before {
+  content:''; position:absolute; top:0; right:0; bottom:0; left:0;
+  background:radial-gradient(ellipse at 30% 70%, rgba(196,98,45,0.15), transparent 60%),
+             radial-gradient(ellipse at 70% 20%, rgba(212,168,67,0.1), transparent 50%);
+  pointer-events:none;
+}
+.ob-left-logo { display:flex; align-items:center; gap:12px; margin-bottom:48px; position:relative; z-index:1; }
+.ob-left-logo-mark {
+  width:40px; height:40px; border-radius:10px;
+  background:linear-gradient(135deg, var(--terra), var(--gold));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Fraunces', serif; font-weight:900; font-size:21px; color:var(--cream);
+}
+.ob-left-logo-text { font-family:'Fraunces', serif; font-weight:700; font-size:18px; color:var(--cream); }
+.ob-left-logo-text span { color:var(--terra2); }
+
+.ob-steps { flex:1; display:flex; flex-direction:column; justify-content:center; position:relative; z-index:1; }
+.ob-step-item {
+  display:flex; align-items:flex-start; gap:14px; padding:14px 0;
+  border-bottom:1px solid rgba(250,247,242,0.07); cursor:default;
+  transition:all 0.2s;
+}
+.ob-step-item:last-child { border-bottom:none; }
+.ob-step-num {
+  width:32px; height:32px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; transition:all 0.3s;
+  font-family:'Fraunces', serif;
+}
+.ob-step-num.done { background:var(--sage); color:var(--cream); }
+.ob-step-num.active {
+  background:var(--terra); color:var(--cream);
+  box-shadow:0 0 0 4px rgba(196,98,45,0.25);
+}
+.ob-step-num.pending { background:rgba(250,247,242,0.08); color:rgba(250,247,242,0.3); }
+.ob-step-label { font-size:14px; font-weight:600; color:rgba(250,247,242,0.5); padding-top:5px; transition:color 0.2s; }
+.ob-step-label.active { color:var(--cream); }
+.ob-step-label.done { color:rgba(250,247,242,0.65); }
+.ob-step-desc { font-size:12px; color:rgba(250,247,242,0.3); margin-top:2px; }
+
+.ob-quote {
+  position:relative; z-index:1;
+  font-family:'Fraunces', serif; font-size:15px; font-style:italic;
+  color:rgba(250,247,242,0.4); line-height:1.7; border-top:1px solid rgba(250,247,242,0.08);
+  padding-top:24px; margin-top:32px;
+}
+.ob-quote em { color:var(--terra2); font-style:normal; }
+
+/* Right form panel */
+.ob-right {
+  flex:1; padding:48px; display:flex; flex-direction:column;
+  justify-content:center; overflow-y:auto;
+}
+.ob-form-wrap { max-width:480px; width:100%; }
+.ob-progress-bar {
+  height:3px; background:var(--paper); border-radius:2px; margin-bottom:40px; overflow:hidden;
+}
+.ob-progress-fill {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg, var(--terra), var(--gold));
+  transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.ob-title {
+  font-family:'Fraunces', serif; font-size:28px; font-weight:700;
+  margin-bottom:8px; letter-spacing:-0.5px; line-height:1.2;
+}
+.ob-sub { color:var(--muted); font-size:15px; margin-bottom:28px; line-height:1.6; }
+
+/* Slide animations */
+.slide-fwd { animation:slideFwd 0.32s cubic-bezier(0.4,0,0.2,1) forwards; }
+.slide-bk  { animation:slideBk  0.32s cubic-bezier(0.4,0,0.2,1) forwards; }
+@keyframes slideFwd { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
+@keyframes slideBk  { from{opacity:0;transform:translateX(-28px)} to{opacity:1;transform:translateX(0)} }
+
+/* Ikigai cards in onboarding */
+.ik-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.ik-card {
+  padding:14px; border-radius:12px; border:1.5px solid var(--border);
+  background:#fff; transition:border-color 0.2s;
+}
+.ik-card:focus-within { border-color:var(--terra); }
+.ik-card-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.ik-card-icon { font-size:18px; }
+.ik-card-label { font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; }
+.ik-card textarea { border:none; background:transparent; outline:none; resize:none;
+  width:100%; font-size:13px; font-family:'Cabinet Grotesk',sans-serif;
+  color:var(--ink); line-height:1.6; min-height:68px; }
+.ik-card textarea::placeholder { color:var(--muted); }
+
+/* Skills input */
+.skill-row { display:flex; gap:8px; }
+.skill-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.skill-chip {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 11px; border-radius:20px; font-size:12px; font-weight:600;
+  background:rgba(196,98,45,0.1); color:var(--terra); border:1px solid rgba(196,98,45,0.2);
+  cursor:pointer; transition:all 0.15s;
+}
+.skill-chip:hover { background:rgba(196,98,45,0.18); }
+
+/* Statement reveal */
+.statement-box {
+  background:linear-gradient(135deg,rgba(196,98,45,0.06),rgba(212,168,67,0.06));
+  border:1.5px solid rgba(196,98,45,0.2);
+  border-radius:14px; padding:22px; margin-bottom:20px;
+}
+.statement-label { font-size:10px; font-weight:800; letter-spacing:0.1em; color:var(--terra); margin-bottom:10px; text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+.statement-text { font-family:'Fraunces',serif; font-size:17px; font-weight:300; font-style:italic; line-height:1.75; color:var(--ink); }
+.tw-cursor { display:inline-block; width:2px; height:18px; background:var(--terra); margin-left:2px; vertical-align:middle; animation:blink 0.8s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.ipp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.ipp-card { padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--cream2); }
+.ipp-lbl { font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:4px; }
+.ipp-val { font-size:12px; color:var(--ink); line-height:1.5; }
+
+/* ob nav */
+.ob-nav { display:flex; justify-content:space-between; align-items:center; margin-top:28px; }
+
+/* ── DISCOVER / MATCHES ── */
+.search-box {
+  display:flex; align-items:center; gap:12px;
+  background:#fff; border:1.5px solid var(--border);
+  border-radius:14px; padding:14px 18px; margin-bottom:12px;
+  box-shadow:var(--shadow); transition:all 0.2s;
+}
+.search-box:focus-within { border-color:var(--terra); box-shadow:0 0 0 3px rgba(196,98,45,0.08), var(--shadow); }
+.search-box input {
+  flex:1; border:none; background:transparent; outline:none;
+  font-size:15px; font-family:'Cabinet Grotesk',sans-serif; color:var(--ink);
+}
+.search-box input::placeholder { color:var(--muted); }
+.search-icon { font-size:18px; color:var(--muted); flex-shrink:0; }
+.search-btn {
+  padding:8px 18px; background:var(--terra); color:var(--cream);
+  border:none; border-radius:9px; font-size:13px; font-weight:700;
+  cursor:pointer; font-family:'Cabinet Grotesk',sans-serif; transition:all 0.2s; flex-shrink:0;
+}
+.search-btn:hover { background:#b0571f; }
+.search-btn:disabled { background:var(--paper); color:var(--muted); cursor:not-allowed; }
+
+/* AI banner */
+.ai-banner {
+  background:linear-gradient(135deg,rgba(196,98,45,0.07),rgba(212,168,67,0.05));
+  border:1.5px solid rgba(196,98,45,0.18); border-radius:16px; padding:20px 22px; margin-bottom:20px;
+}
+.ai-banner-head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.ai-banner-title { font-weight:800; font-size:15px; }
+
+/* Filter row */
+.filter-row { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+.filter-pill {
+  padding:7px 16px; border-radius:30px; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all 0.2s; border:1.5px solid var(--border);
+  background:#fff; color:var(--muted); font-family:'Cabinet Grotesk',sans-serif;
+}
+.filter-pill.active { background:var(--terra); color:var(--cream); border-color:var(--terra); }
+.filter-pill:hover:not(.active) { border-color:var(--terra); color:var(--terra); }
+
+/* Profile cards in grid */
+.pcard {
+  background:#fff; border:1.5px solid var(--border);
+  border-radius:18px; overflow:hidden; transition:all 0.25s;
+  box-shadow:var(--shadow); display:flex; flex-direction:column;
+}
+.pcard:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); border-color:rgba(196,98,45,0.25); }
+.pcard-top { padding:20px 20px 14px; }
+.pcard-header { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+.pcard-info { flex:1; }
+.pcard-name { font-family:'Fraunces',serif; font-size:17px; font-weight:700; margin-bottom:2px; letter-spacing:-0.2px; }
+.pcard-role { font-size:12px; color:var(--muted); }
+.pcard-score {
+  width:44px; height:44px; border-radius:12px; flex-shrink:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,rgba(196,98,45,0.1),rgba(212,168,67,0.1));
+  border:1px solid rgba(196,98,45,0.2);
+}
+.pcard-score-num { font-family:'Fraunces',serif; font-size:17px; font-weight:700; color:var(--terra); line-height:1; }
+.pcard-score-lbl { font-size:9px; color:var(--muted); font-weight:600; }
+.pcard-statement {
+  font-family:'Fraunces',serif; font-size:13px; font-style:italic;
+  color:var(--muted); line-height:1.6; margin-bottom:12px;
+  font-weight:300;
+}
+.pcard-ai-box {
+  background:rgba(74,124,94,0.06); border:1px solid rgba(74,124,94,0.15);
+  border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:12.5px;
+  color:var(--sage); line-height:1.65;
+}
+.pcard-ai-lbl { font-size:10px; font-weight:800; letter-spacing:0.08em; color:var(--sage2); margin-bottom:5px; text-transform:uppercase; }
+.pcard-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
+.pcard-bottom {
+  padding:14px 20px; border-top:1px solid var(--border2);
+  background:var(--cream2); display:flex; gap:8px; align-items:center;
+  margin-top:auto;
+}
+
+/* Full-width match card */
+.mcard {
+  background:#fff; border:1.5px solid var(--border);
+  border-radius:18px; padding:24px; transition:all 0.25s;
+  box-shadow:var(--shadow); display:flex; gap:20px; align-items:flex-start;
+  margin-bottom:14px;
+}
+.mcard:hover { box-shadow:var(--shadow-lg); border-color:rgba(196,98,45,0.2); }
+.mcard-rank {
+  width:36px; text-align:center; flex-shrink:0; padding-top:4px;
+}
+.mcard-rank-num { font-family:'Fraunces',serif; font-size:24px; font-weight:700; color:var(--paper); line-height:1; }
+.mcard-rank-label { font-size:9px; color:var(--muted); font-weight:600; letter-spacing:0.05em; }
+.mcard-body { flex:1; }
+.mcard-header { display:flex; align-items:flex-start; gap:14px; margin-bottom:12px; }
+.mcard-info { flex:1; }
+.mcard-name { font-family:'Fraunces',serif; font-size:19px; font-weight:700; margin-bottom:3px; letter-spacing:-0.3px; }
+.mcard-role { font-size:13px; color:var(--muted); }
+.mcard-score-badge {
+  padding:8px 14px; border-radius:30px;
+  background:linear-gradient(135deg,var(--terra),var(--terra2));
+  color:var(--cream); font-family:'Fraunces',serif; font-size:20px; font-weight:700;
+  flex-shrink:0; box-shadow:0 4px 12px rgba(196,98,45,0.3);
+  display:flex; flex-direction:column; align-items:center; line-height:1;
+}
+.mcard-score-badge span { font-size:9px; font-family:'Cabinet Grotesk',sans-serif; font-weight:600; opacity:0.8; }
+.mcard-headline { font-weight:700; font-size:14px; margin-bottom:10px; color:var(--ink); }
+.mcard-ai {
+  background:rgba(74,124,94,0.06); border:1px solid rgba(74,124,94,0.15);
+  border-radius:10px; padding:12px 14px; margin-bottom:12px; font-size:13px;
+  color:var(--sage); line-height:1.7;
+}
+.mcard-ai-lbl { font-size:10px; font-weight:800; letter-spacing:0.08em; color:var(--sage2); margin-bottom:6px; text-transform:uppercase; }
+.mcard-strengths { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.mcard-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+.mcard-actions { display:flex; gap:8px; align-items:center; }
+
+/* MESSAGES */
+.msg-shell {
+  display:grid; grid-template-columns:280px 1fr;
+  height:calc(100vh - 140px); border-radius:20px; overflow:hidden;
+  border:1.5px solid var(--border); background:#fff; box-shadow:var(--shadow);
+}
+.msg-sidebar { border-right:1px solid var(--border); overflow-y:auto; background:var(--cream2); }
+.msg-sidebar-head {
+  padding:18px 20px; border-bottom:1px solid var(--border);
+  font-family:'Fraunces',serif; font-size:17px; font-weight:700;
+  background:#fff; position:sticky; top:0; z-index:1;
+}
+.msg-thread {
+  display:flex; align-items:center; gap:12px; padding:14px 18px;
+  cursor:pointer; transition:background 0.15s; border-bottom:1px solid var(--border2);
+}
+.msg-thread:hover { background:var(--paper); }
+.msg-thread.active { background:#fff; border-right:3px solid var(--terra); }
+.msg-thread-name { font-size:14px; font-weight:700; margin-bottom:2px; }
+.msg-thread-preview { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msg-unread { width:8px; height:8px; border-radius:50%; background:var(--terra); margin-left:auto; flex-shrink:0; }
+.chat-wrap { display:flex; flex-direction:column; }
+.chat-head {
+  padding:16px 24px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:14px; background:#fff;
+}
+.chat-head-name { font-family:'Fraunces',serif; font-size:17px; font-weight:700; }
+.chat-head-role { font-size:12px; color:var(--muted); }
+.chat-msgs { flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:10px; background:var(--cream2); }
+.bubble { max-width:66%; padding:11px 15px; border-radius:14px; font-size:14px; line-height:1.55; }
+.bubble.me { align-self:flex-end; background:var(--terra); color:var(--cream); border-bottom-right-radius:3px; }
+.bubble.them { align-self:flex-start; background:#fff; color:var(--ink); border:1px solid var(--border); border-bottom-left-radius:3px; }
+.bubble-time { font-size:10px; opacity:0.6; margin-top:3px; text-align:right; }
+.chat-input-row { padding:16px 20px; border-top:1px solid var(--border); display:flex; gap:10px; background:#fff; }
+.chat-input {
+  flex:1; padding:10px 14px; background:var(--cream2); border:1.5px solid var(--border);
+  border-radius:10px; color:var(--ink); font-size:14px; font-family:'Cabinet Grotesk',sans-serif; outline:none; transition:all 0.2s;
+}
+.chat-input:focus { border-color:var(--terra); background:#fff; }
+
+/* PROFILE PAGE */
+.profile-hero {
+  background:#fff; border:1.5px solid var(--border); border-radius:20px;
+  padding:32px; margin-bottom:20px; display:flex; align-items:flex-start; gap:24px;
+  box-shadow:var(--shadow);
+}
+.profile-name { font-family:'Fraunces',serif; font-size:28px; font-weight:700; margin-bottom:4px; letter-spacing:-0.5px; }
+.profile-tagline { color:var(--muted); margin-bottom:12px; font-size:15px; }
+.profile-statement { font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:15px; color:var(--brown); line-height:1.7; margin-bottom:14px; }
+.profile-links { display:flex; gap:8px; flex-wrap:wrap; }
+.profile-link {
+  display:flex; align-items:center; gap:6px; padding:6px 12px;
+  background:var(--cream2); border:1px solid var(--border); border-radius:8px;
+  font-size:12px; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none;
+}
+.profile-link:hover { color:var(--terra); border-color:rgba(196,98,45,0.3); background:#fff; }
+
+.ik-display { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.ik-display-card { padding:18px; background:#fff; border:1.5px solid var(--border); border-radius:14px; box-shadow:var(--shadow); }
+.ik-display-lbl { font-size:10px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px; }
+.ik-display-val { font-size:14px; color:var(--ink); line-height:1.65; }
+
+/* Stats */
+.stat-card { background:#fff; border:1.5px solid var(--border); border-radius:14px; padding:20px; box-shadow:var(--shadow); }
+.stat-num { font-family:'Fraunces',serif; font-size:24px; font-weight:700; margin-bottom:4px; }
+.stat-lbl { font-size:12px; color:var(--muted); font-weight:600; }
+
+/* Utilities */
+.spinner {
+  width:18px; height:18px; border:2px solid rgba(196,98,45,0.2);
+  border-top-color:var(--terra); border-radius:50%; animation:spin 0.7s linear infinite; display:inline-block;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.pulsing { animation:pulse 1.5s infinite; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.fade-up { animation:fadeUp 0.35s ease forwards; }
+.empty-state { text-align:center; padding:64px 20px; }
+.empty-icon { font-size:48px; margin-bottom:14px; }
+.empty-title { font-family:'Fraunces',serif; font-size:20px; font-weight:700; margin-bottom:8px; }
+.empty-sub { color:var(--muted); font-size:14px; }
+.divider { height:1px; background:var(--border); margin:20px 0; }
+.dot-online { width:8px; height:8px; border-radius:50%; background:var(--sage2); }
+
+@media(max-width:900px) {
+  .ob-left { display:none; }
+  .sidebar { display:none; }
+  .main { margin-left:0; padding:20px; }
+  .grid-2,.grid-3 { grid-template-columns:1fr; }
+  .ik-grid,.ik-display,.ipp-grid { grid-template-columns:1fr; }
+  .msg-shell { grid-template-columns:1fr; }
+  .mcard { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── Avatar colors cycling ──
+const AV_COLORS = ["av-terra","av-sage","av-violet","av-gold","av-brown","av-ink"];
+const avColor = (id) => AV_COLORS[id.charCodeAt(id.length-1) % AV_COLORS.length];
+
+// ── Seed data ──
+const SEED_PROFILES = [
+  { id:"p1", name:"Aria Patel", role:"Founder", location:"Bangalore, India",
+    ikigai:{ love:"Building products that make everyday tasks disappear. I love the moment users say 'this just works'.", good:"Product strategy, UX research, storytelling, turning ambiguous problems into clear roadmaps.", paid:"Product management, startup consulting, UX audits, go-to-market strategy.", need:"Tools that reduce cognitive overload for small business owners in emerging markets." },
+    skills:["Product Management","UX Research","Go-to-Market","Figma","Growth"], availability:"Full-time", workingStyle:"Async-first",
+    github:"github.com/ariapatel", linkedin:"linkedin.com/in/ariapatel", intent:"cofounder", visibility:"public",
+    ikigaiStatement:"I exist to simplify complexity — building products that empower under-served entrepreneurs." },
+  { id:"p2", name:"Marcus Chen", role:"Engineer", location:"Singapore",
+    ikigai:{ love:"Writing elegant code and architecting systems that scale. Open source contributions energize me.", good:"Backend engineering, distributed systems, ML pipelines, mentoring junior devs.", paid:"Full-stack development, ML engineering, technical architecture, code reviews.", need:"Democratizing access to AI infrastructure for startups outside Silicon Valley." },
+    skills:["Python","Kubernetes","ML Ops","PostgreSQL","React","System Design"], availability:"Part-time", workingStyle:"Deep work blocks",
+    github:"github.com/marcuschen", linkedin:"linkedin.com/in/marcus-chen-dev", intent:"cofounder", visibility:"public",
+    ikigaiStatement:"I build the invisible infrastructure that lets great ideas scale to millions." },
+  { id:"p3", name:"Zoe Williams", role:"Designer", location:"Lagos, Nigeria",
+    ikigai:{ love:"Visual storytelling and creating brand identities that make people feel something.", good:"UI/UX design, brand strategy, motion graphics, user research facilitation.", paid:"Product design, branding, design systems, pitch deck design, illustration.", need:"Authentic representation of African culture and aesthetics in global tech products." },
+    skills:["Figma","Brand Design","Motion","Design Systems","Illustration","User Research"], availability:"Full-time", workingStyle:"Collaborative sprints",
+    github:"", linkedin:"linkedin.com/in/zoewilliams-design", intent:"teammate", visibility:"public",
+    ikigaiStatement:"I translate vision into visuals — making products that feel as good as they work." },
+  { id:"p4", name:"Rajan Mehta", role:"Investor", location:"Mumbai, India",
+    ikigai:{ love:"Finding contrarian ideas early. I love backing founders who see what others miss.", good:"Market analysis, deal sourcing, founder coaching, financial modeling.", paid:"Angel investing, advisory roles, fractional CFO, venture scouting.", need:"Transparent, founder-friendly capital for deep-tech startups in South Asia." },
+    skills:["Due Diligence","Financial Modeling","Fundraising Strategy","B2B Sales","Venture"], availability:"Flexible", workingStyle:"Outcome-focused",
+    github:"", linkedin:"linkedin.com/in/rajanmehta", intent:"client", visibility:"public",
+    ikigaiStatement:"I invest in people first — backing relentless founders solving real problems." },
+  { id:"p5", name:"Lena Schwarz", role:"AI Researcher", location:"Berlin, Germany",
+    ikigai:{ love:"Pushing the boundaries of what AI can understand. I love elegant mathematical formulations.", good:"NLP, fine-tuning LLMs, writing research papers, bridging academia and industry.", paid:"Applied AI research, model optimization, LLM consulting, technical writing.", need:"AI systems that are explainable, fair, and work as well for minority languages." },
+    skills:["PyTorch","NLP","LLM Fine-tuning","Research","Python","Transformers"], availability:"Part-time", workingStyle:"Deep work blocks",
+    github:"github.com/lenaschwarz-ai", linkedin:"linkedin.com/in/lenaschwarz", intent:"teammate", visibility:"public",
+    ikigaiStatement:"I make AI systems smarter, fairer, and more honest — one model at a time." },
+  { id:"p6", name:"Dayo Okonkwo", role:"Growth Marketer", location:"Accra, Ghana",
+    ikigai:{ love:"Cracking distribution puzzles. Nothing excites me more than a campaign that 10x's in a week.", good:"Growth hacking, SEO/SEM, community building, viral loops, copywriting.", paid:"Growth consulting, performance marketing, content strategy, partnerships.", need:"African startups that deserve global attention but lack the distribution know-how." },
+    skills:["Growth Hacking","SEO","Community","Copywriting","Analytics","Partnerships"], availability:"Full-time", workingStyle:"Async-first",
+    github:"", linkedin:"linkedin.com/in/dayookonkwo", intent:"cofounder", visibility:"public",
+    ikigaiStatement:"I turn great products into movements — building the distribution engines startups need." },
+];
+
+const MESSAGES_SEED = {
+  "p1":[ {id:1,from:"them",text:"Hey! I saw your profile and I think we'd make a great founding team. Would love to chat!",time:"10:32 AM"}, {id:2,from:"me",text:"Hi Aria! Absolutely, your product background complements my technical skills perfectly. When are you free?",time:"10:45 AM"}, {id:3,from:"them",text:"How about tomorrow at 3pm IST? We can do a quick 30-min intro call 🚀",time:"11:01 AM"} ],
+  "p3":[ {id:1,from:"them",text:"Love your work on design systems! I'm looking for a design partner for my EdTech project.",time:"Yesterday"}, {id:2,from:"me",text:"That sounds exciting! What stage is the project at?",time:"Yesterday"} ]
+};
+
+// ── App ──
+function App() {
+  const [page, setPage] = useState("onboarding");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [profiles] = useState(SEED_PROFILES);
+  const [connections, setConnections] = useState(["p1","p3"]);
+  const [messages, setMessages] = useState(MESSAGES_SEED);
+  const [apiKey, setApiKey] = useState("");
+  const [unreadCount] = useState(1);
+
+  if(page==="onboarding") return <Onboarding onComplete={u=>{setCurrentUser(u);setPage("discover");}}/>;
+
+  return (
+    <div className="app">
+      <Sidebar page={page} setPage={setPage} user={currentUser} unreadCount={unreadCount}/>
+      <main className="main">
+        {page==="discover"  && <Discover profiles={profiles} currentUser={currentUser} connections={connections} setConnections={setConnections} apiKey={apiKey} setApiKey={setApiKey}/>}
+        {page==="matches"   && <Matches  profiles={profiles} currentUser={currentUser} connections={connections} setConnections={setConnections} apiKey={apiKey} setApiKey={setApiKey}/>}
+        {page==="messages"  && <Messages connections={connections} profiles={profiles} messages={messages} setMessages={setMessages}/>}
+        {page==="profile"   && <Profile  user={currentUser} setUser={setCurrentUser}/>}
+      </main>
+    </div>
+  );
+}
+
+// ── Sidebar ──
+function Sidebar({page,setPage,user,unreadCount}) {
+  const nav = [
+    {id:"discover",icon:"🔭",label:"Discover"},
+    {id:"matches", icon:"✨",label:"AI Matches"},
+    {id:"messages",icon:"💬",label:"Messages",badge:unreadCount},
+    {id:"profile", icon:"👤",label:"My Profile"},
+  ];
+  const initials = user ? user.name.split(" ").map(w=>w[0]).join("").slice(0,2) : "?";
+  return (
+    <div className="sidebar">
+      <div className="logo">
+        <div className="logo-mark">S</div>
+        <div className="logo-text">Super<span>Network</span><br/>AI</div>
+      </div>
+      <div className="nav-section-label">Navigation</div>
+      <nav className="nav">
+        {nav.map(n=>(
+          <button key={n.id} className={`nav-item${page===n.id?" active":""}`} onClick={()=>setPage(n.id)}>
+            <span className="nav-icon">{n.icon}</span>
+            {n.label}
+            {n.badge?<span className="nav-badge">{n.badge}</span>:null}
+          </button>
+        ))}
+      </nav>
+      <div className="sidebar-divider"/>
+      {user && (
+        <div className="sidebar-user" onClick={()=>setPage("profile")}>
+          <div className={`avatar avatar-36 ${avColor(user.id||"me")}`}>{initials}</div>
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">{user.name}</div>
+            <div className="sidebar-user-role">{user.role}</div>
+          </div>
+          <span style={{color:"rgba(250,247,242,0.3)",fontSize:16}}>›</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── CV/Portfolio Import helper ──
+async function handleImport(url, u, ui) {
+  if(!url||!url.trim()){alert("Please enter a URL first.");return;}
+  // Simulate AI extraction — in production this would call a scraping + Claude API
+  alert("🔍 Scanning " + url + "...
+
+In the full version, Claude would extract your skills and Ikigai answers from your portfolio or LinkedIn. For now, please fill in the fields manually — this feature requires server-side scraping to bypass CORS.");
+}
+
+// ── Onboarding ──
+function Onboarding({onComplete}) {
+  const STEPS = ["Welcome","About You","Your Ikigai","Skills & Style","Links & Privacy","Your Statement"];
+  const [step,setStep] = useState(0);
+  const [dir,setDir] = useState("fwd");
+  const [animKey,setAnimKey] = useState(0);
+  const [data,setData] = useState({
+    name:"",role:"Founder",location:"",
+    ikigai:{love:"",good:"",paid:"",need:""},
+    skills:[],availability:"Full-time",workingStyle:"Async-first",
+    github:"",linkedin:"",portfolio:"",intent:"cofounder",visibility:"public"
+  });
+  const [skillInput,setSkillInput] = useState("");
+  const [apiKey,setApiKey] = useState("");
+  const [statement,setStatement] = useState("");
+  const [typewritten,setTypewritten] = useState("");
+  const [generating,setGenerating] = useState(false);
+
+  const pct = step===0?0:Math.round((step/5)*100);
+  const u = (f,v)=>setData(d=>({...d,[f]:v}));
+  const ui = (f,v)=>setData(d=>({...d,ikigai:{...d.ikigai,[f]:v}}));
+  const addSkill=()=>{ const s=skillInput.trim(); if(s&&!data.skills.includes(s)){setData(d=>({...d,skills:[...d.skills,s]}));setSkillInput("");} };
+  const rmSkill=s=>setData(d=>({...d,skills:d.skills.filter(x=>x!==s)}));
+  const canNext=()=>{ if(step===1)return data.name.trim()&&data.location.trim(); if(step===2)return data.ikigai.love.trim()&&data.ikigai.good.trim(); return true; };
+
+  const go = async (d) => {
+    setDir(d); setAnimKey(k=>k+1);
+    if(d==="fwd") {
+      if(step===4){ setStep(5); await genStatement(); return; }
+      setStep(s=>s+1);
+    } else { setStep(s=>s-1); }
+  };
+
+  const typewrite = (text) => {
+    setTypewritten(""); let i=0;
+    const tick=()=>{ if(i<=text.length){setTypewritten(text.slice(0,i));i++;setTimeout(tick,20);} };
+    tick();
+  };
+
+  const genStatement = async () => {
+    setGenerating(true); setStatement(""); setTypewritten("");
+    const fallback = `I exist at the convergence of ${data.ikigai.love.substring(0,30).trim()}... and a world that needs ${data.ikigai.need.substring(0,30).trim()}...`;
+    if(!apiKey){ setTimeout(()=>{setStatement(fallback);typewrite(fallback);setGenerating(false);},600); return; }
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:100,messages:[{role:"user",content:`Write ONE poetic, personal Ikigai statement in first person for this person. Under 35 words. No quotes or preamble.
+Love: ${data.ikigai.love}
+Good at: ${data.ikigai.good}
+Paid for: ${data.ikigai.paid}
+World needs: ${data.ikigai.need}
+Role: ${data.role}`}]})
+      });
+      const json=await res.json();
+      if(json.error)throw new Error(json.error.message);
+      const s=json.content[0].text.trim().replace(/^[""]|[""]$/g,"");
+      setStatement(s); typewrite(s);
+    } catch(e){ setStatement(fallback); typewrite(fallback); }
+    setGenerating(false);
+  };
+
+  const finish=()=>onComplete({...data,id:"me",ikigaiStatement:statement||`Passionate about ${data.ikigai.love.substring(0,40)}...`});
+
+  const slideClass = dir==="fwd"?"slide-fwd":"slide-bk";
+
+  const ikigaiFields = [
+    {key:"love",icon:"❤️",color:var_terra,label:"What I Love",placeholder:"What brings you energy? What makes time fly?"},
+    {key:"good",icon:"⭐",color:"#a07820",label:"What I'm Good At",placeholder:"Skills, talents, things people ask you for..."},
+    {key:"paid",icon:"💰",color:var_sage,label:"What I Can Be Paid For",placeholder:"Monetizable skills, past work, expertise..."},
+    {key:"need",icon:"🌍",color:var_violet,label:"What the World Needs",placeholder:"Problems you want to solve, changes you want..."},
+  ];
+
+  return (
+    <div className="onboarding-bg">
+      {/* Left panel */}
+      <div className="ob-left">
+        <div>
+          <div className="ob-left-logo">
+            <div className="ob-left-logo-mark">S</div>
+            <div className="ob-left-logo-text">Super<span>Network</span>AI</div>
+          </div>
+          <div className="ob-steps">
+            {STEPS.map((lbl,i)=>(
+              <div key={i} className="ob-step-item">
+                <div className={`ob-step-num ${i<step?"done":i===step?"active":"pending"}`}>
+                  {i<step?"✓":i+1}
+                </div>
+                <div>
+                  <div className={`ob-step-label ${i===step?"active":i<step?"done":""}`}>{lbl}</div>
+                  {i===step&&<div className="ob-step-desc">{["Start here","Your basics","Your purpose","Your skills","Your links","AI magic"][i]}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="ob-quote">
+          "The best partnerships start with <em>shared purpose</em>, not shared CVs."
+        </div>
+      </div>
+
+      {/* Right form */}
+      <div className="ob-right">
+        <div className="ob-form-wrap">
+          {step>0&&<div className="ob-progress-bar"><div className="ob-progress-fill" style={{width:`${pct}%`}}></div></div>}
+
+          <div key={animKey} className={step>0?slideClass:"fade-up"}>
+
+            {/* Step 0 — Welcome */}
+            {step===0&&(
+              <div>
+                <div style={{fontSize:52,marginBottom:16}}>生き甲斐</div>
+                <div className="ob-title">Find your reason<br/>to build together.</div>
+                <div className="ob-sub">SuperNetworkAI matches you with cofounders, teammates, and clients using the Ikigai framework — going deeper than any résumé ever could.</div>
+                <div style={{display:"flex",gap:10,marginBottom:24}}>
+                  {[["🤝","Cofounders"],["👥","Teammates"],["💼","Clients"]].map(([ic,lb])=>(
+                    <div key={lb} style={{flex:1,padding:"14px 10px",background:"#fff",border:"1.5px solid var(--border)",borderRadius:12,textAlign:"center",boxShadow:"var(--shadow)"}}>
+                      <div style={{fontSize:24,marginBottom:4}}>{ic}</div>
+                      <div style={{fontSize:12,fontWeight:700,color:"var(--muted)"}}>{lb}</div>
+                    </div>
+                  ))}
+                </div>
+                <button className="btn btn-primary" style={{width:"100%",padding:"14px",fontSize:15,borderRadius:12}} onClick={()=>go("fwd")}>
+                  Create My Profile →
+                </button>
+              </div>
+            )}
+
+            {/* Step 1 — Basic info */}
+            {step===1&&(
+              <div>
+                <div className="ob-title">Tell us about yourself</div>
+                <div className="ob-sub">The basics that help people find you</div>
+                <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                  <div className="input-group">
+                    <label className="label">Full Name</label>
+                    <input className="input" placeholder="e.g. Priya Sharma" value={data.name} onChange={e=>u("name",e.target.value)} autoFocus/>
+                  </div>
+                  <div className="grid-2">
+                    <div className="input-group">
+                      <label className="label">I am a...</label>
+                      <select className="input" value={data.role} onChange={e=>u("role",e.target.value)}>
+                        {["Founder","Engineer","Designer","Marketer","Researcher","Investor","Product Manager","Other"].map(r=><option key={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label className="label">Looking to...</label>
+                      <select className="input" value={data.intent} onChange={e=>u("intent",e.target.value)}>
+                        <option value="cofounder">Find a Cofounder</option>
+                        <option value="teammate">Find Teammates</option>
+                        <option value="client">Find Clients</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label className="label">Location</label>
+                    <input className="input" placeholder="e.g. Chennai, India" value={data.location} onChange={e=>u("location",e.target.value)}/>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2 — Ikigai */}
+            {step===2&&(
+              <div>
+                <div className="ob-title">Your Ikigai</div>
+                <div className="ob-sub">Four answers that define you better than any résumé. Be honest and specific — this is how our AI finds your best matches.</div>
+                <div className="ik-grid">
+                  {[
+                    {key:"love",icon:"❤️",color:"#c4622d",label:"What I Love",placeholder:"What brings you energy? What makes time fly?"},
+                    {key:"good",icon:"⭐",color:"#a07820",label:"What I'm Good At",placeholder:"Skills, talents, things people ask you for..."},
+                    {key:"paid",icon:"💰",color:"#4a7c5e",label:"Can Be Paid For",placeholder:"Monetizable skills, past work, expertise..."},
+                    {key:"need",icon:"🌍",color:"#7b5ea7",label:"World Needs From Me",placeholder:"Problems you want to solve..."},
+                  ].map(q=>(
+                    <div key={q.key} className="ik-card" style={{borderColor:`${q.color}30`}}>
+                      <div className="ik-card-head">
+                        <span className="ik-card-icon">{q.icon}</span>
+                        <span className="ik-card-label" style={{color:q.color}}>{q.label}</span>
+                      </div>
+                      <textarea placeholder={q.placeholder} value={data.ikigai[q.key]} onChange={e=>ui(q.key,e.target.value)}/>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step 3 — Skills */}
+            {step===3&&(
+              <div>
+                <div className="ob-title">Skills & Working Style</div>
+                <div className="ob-sub">Help us find people you'll actually work well with</div>
+                <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                  <div className="input-group">
+                    <label className="label">Your Skills</label>
+                    <div className="skill-row">
+                      <input className="input" placeholder="e.g. React, Fundraising, UX..." value={skillInput}
+                        onChange={e=>setSkillInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addSkill()} autoFocus/>
+                      <button className="btn btn-secondary btn-sm" onClick={addSkill}>Add</button>
+                    </div>
+                    {data.skills.length>0&&(
+                      <div className="skill-tags">
+                        {data.skills.map(s=><span key={s} className="skill-chip" onClick={()=>rmSkill(s)}>{s} ×</span>)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid-2">
+                    <div className="input-group">
+                      <label className="label">Availability</label>
+                      <select className="input" value={data.availability} onChange={e=>u("availability",e.target.value)}>
+                        {["Full-time","Part-time","Weekends only","Flexible","Not available"].map(a=><option key={a}>{a}</option>)}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label className="label">Working Style</label>
+                      <select className="input" value={data.workingStyle} onChange={e=>u("workingStyle",e.target.value)}>
+                        {["Async-first","Real-time collaboration","Deep work blocks","Flexible","Collaborative sprints"].map(s=><option key={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4 — Links */}
+            {step===4&&(
+              <div>
+                <div className="ob-title">Links & Privacy</div>
+                <div className="ob-sub">Optional — helps others see your work. Add your Anthropic API key to get a personalized AI Ikigai statement.</div>
+                <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                  {[{f:"github",ic:"🐙",lb:"GitHub",ph:"github.com/username"},{f:"linkedin",ic:"💼",lb:"LinkedIn",ph:"linkedin.com/in/username"},{f:"portfolio",ic:"🌐",lb:"Portfolio",ph:"yoursite.com"}].map(l=>(
+                    <div key={l.f} className="input-group">
+                      <label className="label">{l.ic} {l.lb}</label>
+                      <input className="input" placeholder={l.ph} value={data[l.f]} onChange={e=>u(l.f,e.target.value)}/>
+                    </div>
+                  ))}
+                  <div className="input-group">
+                    <label className="label">Profile Visibility</label>
+                    <select className="input" value={data.visibility} onChange={e=>u("visibility",e.target.value)}>
+                      <option value="public">🌐 Public — anyone can find me</option>
+                      <option value="private">🔒 Private — only matched users</option>
+                    </select>
+                  </div>
+                  {/* CV / Portfolio URL import */}
+                  <div style={{background:"rgba(74,124,94,0.06)",border:"1.5px solid rgba(74,124,94,0.2)",borderRadius:12,padding:14}}>
+                    <div style={{fontSize:12,fontWeight:700,color:"var(--sage)",marginBottom:6}}>📄 IMPORT FROM CV / PORTFOLIO URL</div>
+                    <div style={{fontSize:12,color:"var(--muted)",marginBottom:8}}>Paste a link to your portfolio or CV — AI will extract your skills and Ikigai answers automatically.</div>
+                    <div style={{display:"flex",gap:8}}>
+                      <input className="input" style={{fontSize:13}} placeholder="e.g. https://yourportfolio.com or LinkedIn URL"
+                        value={data.importUrl||""} onChange={e=>u("importUrl",e.target.value)}/>
+                      <button className="btn btn-sage btn-sm" onClick={()=>handleImport(data.importUrl,u,ui)}>Import</button>
+                    </div>
+                  </div>
+                  <div style={{background:"rgba(196,98,45,0.06)",border:"1.5px solid rgba(196,98,45,0.15)",borderRadius:12,padding:14}}>
+                    <div style={{fontSize:12,fontWeight:700,color:"var(--terra)",marginBottom:8}}>⚡ OPTIONAL — AI Statement</div>
+                    <input className="input" type="password" placeholder="Anthropic API key (sk-ant-...) for personalized AI statement"
+                      value={apiKey} onChange={e=>setApiKey(e.target.value)} style={{fontSize:13}}/>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 5 — AI Statement */}
+            {step===5&&(
+              <div>
+                <div className="ob-title">Your Ikigai Statement ✨</div>
+                <div className="ob-sub">{generating?"Claude is crafting your personal statement...":"Your AI-generated reason for being. This appears on your profile."}</div>
+                <div className="statement-box" style={{minHeight:100}}>
+                  <div className="statement-label">
+                    ✨ Your Ikigai Statement
+                    {generating&&<div className="spinner" style={{width:14,height:14,marginLeft:6}}></div>}
+                  </div>
+                  {generating&&!typewritten
+                    ? <div style={{color:"var(--muted)",fontSize:14,fontStyle:"italic"}} className="pulsing">Weaving your purpose together...</div>
+                    : <div className="statement-text">
+                        {typewritten||statement}
+                        {typewritten&&typewritten.length<(statement||"x").length&&<span className="tw-cursor"/>}
+                      </div>
+                  }
+                </div>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",color:"var(--muted)",marginBottom:10,textTransform:"uppercase"}}>Profile Preview</div>
+                <div className="ipp-grid">
+                  {[
+                    {k:"love",ic:"❤️",color:"#c4622d",lb:"Loves"},
+                    {k:"good",ic:"⭐",color:"#a07820",lb:"Good At"},
+                    {k:"paid",ic:"💰",color:"#4a7c5e",lb:"Paid For"},
+                    {k:"need",ic:"🌍",color:"#7b5ea7",lb:"World Needs"},
+                  ].map(q=>(
+                    <div key={q.k} className="ipp-card">
+                      <div className="ipp-lbl" style={{color:q.color}}>{q.ic} {q.lb}</div>
+                      <div className="ipp-val">{(data.ikigai[q.k]||"—").substring(0,55)}{data.ikigai[q.k]?.length>55?"...":""}</div>
+                    </div>
+                  ))}
+                </div>
+                {!generating&&statement&&(
+                  <button className="btn btn-ghost btn-sm" onClick={genStatement} style={{marginBottom:4}}>🔄 Regenerate</button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Nav buttons */}
+          {step>0&&(
+            <div className="ob-nav">
+              <button className="btn btn-ghost" onClick={()=>go("bk")}>← Back</button>
+              {step<5
+                ? <button className="btn btn-primary" onClick={()=>go("fwd")} disabled={!canNext()}>Continue →</button>
+                : <button className="btn btn-primary" onClick={finish} disabled={generating} style={{background:"var(--sage)"}}>
+                    {generating?"Generating...":"🚀 Enter SuperNetworkAI"}
+                  </button>
+              }
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Discover ──
+function Discover({profiles,currentUser,connections,setConnections,apiKey,setApiKey}) {
+  const [filter,setFilter] = useState("all");
+  const [search,setSearch] = useState("");
+  const [aiQuery,setAiQuery] = useState("");
+  const [aiResults,setAiResults] = useState(null);
+  const [loading,setLoading] = useState(false);
+  const [localKey,setLocalKey] = useState(apiKey);
+  const [showKey,setShowKey] = useState(false);
+
+  const visible = aiResults
+    ? aiResults.map(r=>({...profiles.find(p=>p.id===r.id),...r})).filter(p=>p.name)
+    : profiles.filter(p=>{ 
+        if(filter!=="all"&&p.intent!==filter)return false;
+        if(search&&!p.name.toLowerCase().includes(search.toLowerCase())&&!p.skills.join(" ").toLowerCase().includes(search.toLowerCase()))return false;
+        return true;
+      });
+
+  const runAI = async () => {
+    const key=apiKey||localKey; if(!key){setShowKey(true);return;}
+    if(!apiKey)setApiKey(key);
+    setLoading(true); setAiResults(null);
+    try {
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`You are a networking AI. User searches: "${aiQuery}"\n\nProfiles:\n${JSON.stringify(profiles.map(p=>({id:p.id,name:p.name,role:p.role,intent:p.intent,skills:p.skills,ikigai:p.ikigai})))}\n\nReturn JSON array only. Each item: {id,score(0-100),explanation(2 sentences)}. Sort by score desc. Min score 35. No other text.`}]})
+      });
+      const d=await res.json();
+      if(d.error)throw new Error(d.error.message);
+      setAiResults(JSON.parse(d.content[0].text.replace(/```json|```/g,"").trim()));
+    } catch(e){alert("AI search failed: "+e.message);}
+    setLoading(false);
+  };
+
+  return (
+    <div className="fade-up">
+      <div className="page-header">
+        <div>
+          <div className="page-title">Discover People</div>
+          <div className="page-sub">Browse {profiles.length} builders, founders & clients in the network</div>
+        </div>
+      </div>
+
+      {/* AI search */}
+      <div className="ai-banner">
+        <div className="ai-banner-head">
+          <span style={{fontSize:20}}>✨</span>
+          <div className="ai-banner-title">AI-Powered Search</div>
+          <span className="tag tag-terra" style={{fontSize:11}}>Claude</span>
+          <span className="tag tag-sage" style={{fontSize:11,marginLeft:"auto"}}>Auto-updates with your profile</span>
+        </div>
+        <div className="search-box" style={{marginBottom:0}}>
+          <span className="search-icon">🔍</span>
+          <input placeholder='Try "technical cofounder who loves EdTech" or "designer for a fintech startup"...'
+            value={aiQuery} onChange={e=>setAiQuery(e.target.value)} onKeyDown={e=>e.key==="Enter"&&runAI()}/>
+          <button className="search-btn" onClick={runAI} disabled={loading}>{loading?"Searching...":"✨ AI Search"}</button>
+        </div>
+        {showKey&&!apiKey&&(
+          <div style={{display:"flex",gap:8,marginTop:12}}>
+            <input className="input" type="password" placeholder="Anthropic API key (sk-ant-...)" value={localKey} onChange={e=>setLocalKey(e.target.value)} style={{fontSize:13}}/>
+            <button className="btn btn-primary btn-sm" onClick={()=>{setApiKey(localKey);setShowKey(false);}}>Save</button>
+          </div>
+        )}
+        {aiResults&&(
+          <div style={{marginTop:10,display:"flex",alignItems:"center",gap:8}}>
+            <div className="dot-online"></div>
+            <span style={{fontSize:13,color:"var(--sage)",fontWeight:600}}>{aiResults.length} AI-matched profiles</span>
+            <button className="btn btn-ghost btn-sm" onClick={()=>{setAiResults(null);setAiQuery("");}}>Clear</button>
+          </div>
+        )}
+      </div>
+
+      {!aiResults&&(
+        <>
+          <div className="search-box" style={{marginBottom:12,boxShadow:"none"}}>
+            <span className="search-icon">🔍</span>
+            <input placeholder="Search by name, role, or skill..." value={search} onChange={e=>setSearch(e.target.value)}/>
+          </div>
+          <div className="filter-row">
+            {[["all","All People"],["cofounder","🤝 Cofounders"],["teammate","👥 Teammates"],["client","💼 Clients"]].map(([v,lb])=>(
+              <button key={v} className={`filter-pill${filter===v?" active":""}`} onClick={()=>setFilter(v)}>{lb}</button>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="grid-3">
+        {visible.map(p=><PCard key={p.id} profile={p} connections={connections} setConnections={setConnections} showAI={!!aiResults}/>)}
+      </div>
+      {visible.length===0&&<div className="empty-state"><div className="empty-icon">🔭</div><div className="empty-title">No matches found</div><div className="empty-sub">Try adjusting your search or filters</div></div>}
+    </div>
+  );
+}
+
+// ── Profile Card (grid) ──
+function PCard({profile:p, connections, setConnections, showAI}) {
+  const isConn = connections.includes(p.id);
+  const colors = {"cofounder":"tag-terra","teammate":"tag-sage","client":"tag-gold"};
+  const intentLabel = {"cofounder":"🤝 Cofounder","teammate":"👥 Teammate","client":"💼 Client"};
+  const av = avColor(p.id);
+
+  return (
+    <div className="pcard fade-up">
+      <div className="pcard-top">
+        <div className="pcard-header">
+          <div className={`avatar avatar-56 ${av}`}>{p.name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+          <div className="pcard-info">
+            <div className="pcard-name">{p.name}</div>
+            <div className="pcard-role">{p.role} · {p.location}</div>
+            <div style={{marginTop:6}}><span className={`tag ${colors[p.intent]||"tag-muted"}`} style={{fontSize:11}}>{intentLabel[p.intent]}</span></div>
+          </div>
+          {showAI&&p.score!==undefined&&(
+            <div className="pcard-score">
+              <div className="pcard-score-num">{p.score}</div>
+              <div className="pcard-score-lbl">match</div>
+            </div>
+          )}
+        </div>
+
+        {showAI&&p.explanation&&(
+          <div className="pcard-ai-box">
+            <div className="pcard-ai-lbl">✨ AI Insight</div>
+            {p.explanation}
+          </div>
+        )}
+
+        {!showAI&&p.ikigaiStatement&&(
+          <div className="pcard-statement">"{p.ikigaiStatement}"</div>
+        )}
+
+        <div className="pcard-tags">
+          {p.skills.slice(0,4).map(s=><span key={s} className="tag tag-muted">{s}</span>)}
+          {p.skills.length>4&&<span className="tag tag-muted">+{p.skills.length-4}</span>}
+        </div>
+      </div>
+
+      <div className="pcard-bottom">
+        {isConn
+          ? <span className="tag tag-sage">✓ Connected</span>
+          : <button className="btn btn-primary btn-sm" onClick={()=>setConnections(c=>[...c,p.id])}>Connect</button>
+        }
+        <span className="tag tag-muted" style={{fontSize:11}}>{p.availability}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── AI Matches ──
+function Matches({profiles,currentUser,connections,setConnections,apiKey,setApiKey}) {
+  const [matches,setMatches] = useState(null);
+  const [loading,setLoading] = useState(false);
+  const [localKey,setLocalKey] = useState(apiKey);
+  const [filter,setFilter] = useState("all");
+
+  const generate = async () => {
+    const key=apiKey||localKey; if(!key)return;
+    if(!apiKey)setApiKey(key);
+    setLoading(true);
+    try {
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:`Expert cofounder matchmaker. 
+Current user: ${JSON.stringify({name:currentUser?.name,role:currentUser?.role,intent:currentUser?.intent,skills:currentUser?.skills,ikigai:currentUser?.ikigai})}
+Network: ${JSON.stringify(profiles.map(p=>({id:p.id,name:p.name,role:p.role,intent:p.intent,skills:p.skills,ikigai:p.ikigai})))}
+Return JSON array only. Each: {id,score(0-100),matchType(cofounder/teammate/client),headline(1 sentence),explanation(3 sentences on ikigai synergy+skills+style),strengths(array 2-3 items)}. Sort by score. No other text.`}]})
+      });
+      const d=await res.json();
+      if(d.error)throw new Error(d.error.message);
+      setMatches(JSON.parse(d.content[0].text.replace(/```json|```/g,"").trim()));
+    } catch(e){alert("Failed: "+e.message);}
+    setLoading(false);
+  };
+
+  const display = matches
+    ? matches.map(m=>({...profiles.find(p=>p.id===m.id),...m})).filter(p=>p.name)
+        .filter(p=>filter==="all"||p.matchType===filter)
+    : [];
+
+  return (
+    <div className="fade-up">
+      <div className="page-header">
+        <div>
+          <div className="page-title">AI Matches</div>
+          <div className="page-sub">Claude analyses your Ikigai to find your most aligned connections</div>
+        </div>
+        {matches&&<button className="btn btn-ghost btn-sm" onClick={()=>setMatches(null)}>↻ Regenerate</button>}
+      </div>
+
+      {!matches&&!loading&&(
+        <div className="card" style={{textAlign:"center",padding:"60px 40px",border:"1.5px dashed var(--border)"}}>
+          <div style={{fontSize:52,marginBottom:16}}>🧠</div>
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:10}}>Find Your Perfect Matches</div>
+          <div style={{color:"var(--muted)",marginBottom:28,maxWidth:420,margin:"0 auto 28px",fontSize:15,lineHeight:1.7}}>Our AI reads your Ikigai and compares it against everyone in the network to surface your most complementary connections.</div>
+          {/* AI prefill note */}
+          <div style={{maxWidth:400,margin:"0 auto 20px",background:"rgba(74,124,94,0.07)",border:"1px solid rgba(74,124,94,0.2)",borderRadius:10,padding:"10px 14px",fontSize:13,color:"var(--sage)",textAlign:"left"}}>
+            <strong>✨ AI Pre-fills Your Criteria</strong><br/>
+            <span style={{color:"var(--muted)"}}>Claude automatically extracts matchmaking criteria from your Ikigai profile. You can customise skills, intent, and availability on your Profile page anytime.</span>
+          </div>
+          {!apiKey&&(
+            <div style={{maxWidth:400,margin:"0 auto 16px",display:"flex",gap:8}}>
+              <input className="input" type="password" placeholder="Anthropic API key (sk-ant-...)" value={localKey} onChange={e=>setLocalKey(e.target.value)}/>
+            </div>
+          )}
+          <button className="btn btn-primary" onClick={generate} disabled={!apiKey&&!localKey} style={{padding:"12px 28px",fontSize:15}}>
+            ✨ Generate My Matches
+          </button>
+        </div>
+      )}
+
+      {loading&&(
+        <div className="card" style={{textAlign:"center",padding:"64px 40px"}}>
+          <div className="spinner" style={{width:40,height:40,margin:"0 auto 16px"}}></div>
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:8}} className="pulsing">Analysing your Ikigai...</div>
+          <div style={{color:"var(--muted)",fontSize:14}}>Comparing your profile with {profiles.length} people in the network</div>
+        </div>
+      )}
+
+      {matches&&(
+        <>
+          <div className="filter-row">
+            {[["all","All Matches"],["cofounder","🤝 Cofounders"],["teammate","👥 Teammates"],["client","💼 Clients"]].map(([v,lb])=>(
+              <button key={v} className={`filter-pill${filter===v?" active":""}`} onClick={()=>setFilter(v)}>{lb}</button>
+            ))}
+          </div>
+          {display.map((p,i)=><MCard key={p.id} profile={p} rank={i+1} connections={connections} setConnections={setConnections}/>)}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Match card (full width) ──
+function MCard({profile:p, rank, connections, setConnections}) {
+  const isConn = connections.includes(p.id);
+  const av = avColor(p.id);
+  const scoreColor = p.score>=80?"var(--sage)":p.score>=60?"var(--terra)":"var(--gold)";
+
+  return (
+    <div className="mcard fade-up">
+      <div className="mcard-rank">
+        <div className="mcard-rank-num" style={{color:rank<=3?"var(--terra)":"var(--paper)"}}>#{rank}</div>
+      </div>
+      <div className={`avatar avatar-56 ${av}`} style={{flexShrink:0}}>{p.name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+      <div className="mcard-body">
+        <div className="mcard-header">
+          <div className="mcard-info">
+            <div className="mcard-name">{p.name}</div>
+            <div className="mcard-role">{p.role} · {p.location}</div>
+            <div style={{marginTop:6,display:"flex",gap:6,flexWrap:"wrap"}}>
+              <span className={`tag ${{cofounder:"tag-terra",teammate:"tag-sage",client:"tag-gold"}[p.matchType]||"tag-muted"}`} style={{fontSize:11}}>
+                {{cofounder:"🤝 Cofounder",teammate:"👥 Teammate",client:"💼 Client"}[p.matchType]}
+              </span>
+            </div>
+          </div>
+          <div className="mcard-score-badge" style={{background:`linear-gradient(135deg,${scoreColor},${scoreColor}cc)`}}>
+            {p.score}<span>match</span>
+          </div>
+        </div>
+        {p.headline&&<div className="mcard-headline">{p.headline}</div>}
+        <div className="mcard-ai">
+          <div className="mcard-ai-lbl">✨ Match Analysis</div>
+          {p.explanation}
+        </div>
+        {p.strengths&&(
+          <div className="mcard-strengths">
+            {p.strengths.map((s,i)=><span key={i} className="tag tag-sage" style={{fontSize:11}}>✓ {s}</span>)}
+          </div>
+        )}
+        <div className="mcard-tags">
+          {p.skills?.slice(0,5).map(s=><span key={s} className="tag tag-muted">{s}</span>)}
+        </div>
+        <div className="mcard-actions">
+          {isConn
+            ?<span className="tag tag-sage" style={{padding:"8px 14px"}}>✓ Connected</span>
+            :<button className="btn btn-primary btn-sm" onClick={()=>setConnections(c=>[...c,p.id])}>🤝 Connect</button>
+          }
+          <span className="tag tag-muted">{p.availability}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Messages ──
+function Messages({connections,profiles,messages,setMessages}) {
+  const [active,setActive] = useState(connections[0]||null);
+  const [input,setInput] = useState("");
+  const chatRef = useRef(null);
+  const connProfiles = connections.map(id=>profiles.find(p=>p.id===id)).filter(Boolean);
+  const activePro = profiles.find(p=>p.id===active);
+  const chat = messages[active]||[];
+  const send = () => {
+    if(!input.trim()||!active)return;
+    const msg={id:Date.now(),from:"me",text:input.trim(),time:new Date().toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"})};
+    setMessages(m=>({...m,[active]:[...(m[active]||[]),msg]}));
+    setInput("");
+  };
+  useEffect(()=>{ if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight; },[chat]);
+
+  if(connections.length===0) return (
+    <div className="fade-up">
+      <div className="page-header"><div className="page-title">Messages</div></div>
+      <div className="empty-state"><div className="empty-icon">💬</div><div className="empty-title">No conversations yet</div><div className="empty-sub">Connect with people in Discover to start chatting</div></div>
+    </div>
+  );
+
+  return (
+    <div className="fade-up">
+      <div className="page-header"><div><div className="page-title">Messages</div><div className="page-sub">{connections.length} active conversations</div></div></div>
+      <div className="msg-shell">
+        <div className="msg-sidebar">
+          <div className="msg-sidebar-head">Conversations</div>
+          {connProfiles.map(p=>(
+            <div key={p.id} className={`msg-thread${active===p.id?" active":""}`} onClick={()=>setActive(p.id)}>
+              <div className={`avatar avatar-44 ${avColor(p.id)}`}>{p.name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div className="msg-thread-name">{p.name}</div>
+                <div className="msg-thread-preview">{(messages[p.id]||[]).slice(-1)[0]?.text||"No messages yet"}</div>
+              </div>
+              {p.id==="p1"&&<div className="msg-unread"/>}
+            </div>
+          ))}
+        </div>
+        <div className="chat-wrap">
+          {activePro?(
+            <>
+              <div className="chat-head">
+                <div className={`avatar avatar-44 ${avColor(activePro.id)}`}>{activePro.name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+                <div>
+                  <div className="chat-head-name">{activePro.name}</div>
+                  <div className="chat-head-role">{activePro.role} · {activePro.location}</div>
+                </div>
+                <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:6}}>
+                  <div className="dot-online"/><span style={{fontSize:12,color:"var(--sage)",fontWeight:600}}>Online</span>
+                </div>
+              </div>
+              <div className="chat-msgs" ref={chatRef}>
+                {chat.length===0&&<div style={{textAlign:"center",padding:40,color:"var(--muted)",fontSize:14}}>Start a conversation with {activePro.name} 👋</div>}
+                {chat.map(m=>(
+                  <div key={m.id} className={`bubble ${m.from==="me"?"me":"them"}`}>
+                    {m.text}<div className="bubble-time">{m.time}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="chat-input-row">
+                <input className="chat-input" placeholder={`Message ${activePro.name}...`}
+                  value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()}/>
+                <button className="btn btn-primary" onClick={send}>Send</button>
+              </div>
+            </>
+          ):<div className="empty-state"><div className="empty-title">Select a conversation</div></div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Profile ──
+function Profile({user,setUser}) {
+  const [editing,setEditing] = useState(false);
+  const [draft,setDraft] = useState(user);
+  const [si,setSi] = useState("");
+  if(!user)return null;
+  const save=()=>{setUser(draft);setEditing(false);};
+  const addS=()=>{const s=si.trim();if(s&&!draft.skills.includes(s)){setDraft(d=>({...d,skills:[...d.skills,s]}));setSi("");}};
+  const initials = user.name.split(" ").map(w=>w[0]).join("").slice(0,2);
+
+  return (
+    <div className="fade-up">
+      <div className="page-header">
+        <div><div className="page-title">My Profile</div><div className="page-sub">How others see you in the network</div></div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <span className={`tag ${user.visibility==="public"?"tag-sage":"tag-muted"}`}>{user.visibility==="public"?"🌐 Public":"🔒 Private"}</span>
+          {!editing
+            ?<button className="btn btn-secondary btn-sm" onClick={()=>setEditing(true)}>Edit Profile</button>
+            :<><button className="btn btn-primary btn-sm" onClick={save}>Save</button><button className="btn btn-ghost btn-sm" onClick={()=>{setDraft(user);setEditing(false);}}>Cancel</button></>
+          }
+        </div>
+      </div>
+
+      <div className="profile-hero">
+        <div className={`avatar avatar-80 ${avColor("me")}`}>{initials}</div>
+        <div style={{flex:1}}>
+          {editing?(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <input className="input" value={draft.name} onChange={e=>setDraft(d=>({...d,name:e.target.value}))} placeholder="Name"/>
+              <div className="grid-2">
+                <input className="input" value={draft.location} onChange={e=>setDraft(d=>({...d,location:e.target.value}))} placeholder="Location"/>
+                <select className="input" value={draft.intent} onChange={e=>setDraft(d=>({...d,intent:e.target.value}))}>
+                  <option value="cofounder">Looking for Cofounder</option>
+                  <option value="teammate">Looking for Teammate</option>
+                  <option value="client">Looking for Client</option>
+                </select>
+              </div>
+            </div>
+          ):(
+            <>
+              <div className="profile-name">{user.name}</div>
+              <div className="profile-tagline">{user.role} · {user.location}</div>
+              {user.ikigaiStatement&&<div className="profile-statement">"{user.ikigaiStatement}"</div>}
+              <div className="profile-links">
+                {user.github&&<span className="profile-link">🐙 {user.github}</span>}
+                {user.linkedin&&<span className="profile-link">💼 {user.linkedin}</span>}
+                {user.portfolio&&<span className="profile-link">🌐 {user.portfolio}</span>}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="card" style={{marginBottom:20}}>
+        <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,marginBottom:16,fontSize:17}}>My Ikigai ✨</div>
+        {editing?(
+          <div className="ik-grid">
+            {[{k:"love",ic:"❤️",color:"#c4622d",lb:"Love"},{k:"good",ic:"⭐",color:"#a07820",lb:"Good At"},{k:"paid",ic:"💰",color:"#4a7c5e",lb:"Paid For"},{k:"need",ic:"🌍",color:"#7b5ea7",lb:"World Needs"}].map(q=>(
+              <div key={q.k} className="ik-card" style={{borderColor:`${q.color}30`}}>
+                <div className="ik-card-head"><span className="ik-card-icon">{q.ic}</span><span className="ik-card-label" style={{color:q.color}}>{q.lb}</span></div>
+                <textarea value={draft.ikigai[q.k]} onChange={e=>setDraft(d=>({...d,ikigai:{...d.ikigai,[q.k]:e.target.value}}))}/>
+              </div>
+            ))}
+          </div>
+        ):(
+          <div className="ik-display">
+            {[{k:"love",ic:"❤️",color:"#c4622d",lb:"What I Love"},{k:"good",ic:"⭐",color:"#a07820",lb:"What I'm Good At"},{k:"paid",ic:"💰",color:"#4a7c5e",lb:"Can Be Paid For"},{k:"need",ic:"🌍",color:"#7b5ea7",lb:"World Needs"}].map(q=>(
+              <div key={q.k} className="ik-display-card">
+                <div className="ik-display-lbl" style={{color:q.color}}>{q.ic} {q.lb}</div>
+                <div className="ik-display-val">{user.ikigai[q.k]||<span style={{color:"var(--muted)"}}>Not filled in</span>}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="card" style={{marginBottom:20}}>
+        <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,marginBottom:14,fontSize:17}}>Skills 🛠️</div>
+        {editing?(
+          <>
+            <div className="skill-row" style={{marginBottom:10}}>
+              <input className="input" placeholder="Add a skill..." value={si} onChange={e=>setSi(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addS()}/>
+              <button className="btn btn-secondary" onClick={addS}>Add</button>
+            </div>
+            <div className="skill-tags">
+              {draft.skills.map(s=><span key={s} className="skill-chip" onClick={()=>setDraft(d=>({...d,skills:d.skills.filter(x=>x!==s)}))}>{s} ×</span>)}
+            </div>
+          </>
+        ):(
+          <div className="skill-tags">
+            {user.skills.length>0?user.skills.map(s=><span key={s} className="skill-chip">{s}</span>):<span style={{color:"var(--muted)",fontSize:13}}>No skills added yet</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="grid-2">
+        <div className="stat-card"><div style={{fontSize:22,marginBottom:6}}>🕐</div><div className="stat-num" style={{color:"var(--terra)"}}>{user.availability}</div><div className="stat-lbl">Availability</div></div>
+        <div className="stat-card"><div style={{fontSize:22,marginBottom:6}}>🎯</div><div className="stat-num" style={{color:"var(--sage)"}}>{user.workingStyle}</div><div className="stat-lbl">Working Style</div></div>
+      </div>
+
+      {/* Privacy & Controls */}
+      <div className="card" style={{marginTop:20}}>
+        <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,marginBottom:4,fontSize:17}}>Privacy & Controls 🔒</div>
+        <div style={{color:"var(--muted)",fontSize:13,marginBottom:16}}>Manage who can find and interact with you</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",background:"var(--cream2)",borderRadius:12,border:"1px solid var(--border)"}}>
+            <div>
+              <div style={{fontWeight:700,fontSize:14}}>Profile Visibility</div>
+              <div style={{fontSize:12,color:"var(--muted)",marginTop:2}}>{user.visibility==="public"?"Anyone in the network can find and view your profile":"Only users you match with can see your profile"}</div>
+            </div>
+            <span className={`tag ${user.visibility==="public"?"tag-sage":"tag-muted"}`}>{user.visibility==="public"?"🌐 Public":"🔒 Private"}</span>
+          </div>
+          <div style={{padding:"12px 16px",background:"var(--cream2)",borderRadius:12,border:"1px solid var(--border)"}}>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:8}}>Block a User</div>
+            <div style={{fontSize:12,color:"var(--muted)",marginBottom:10}}>Blocked users cannot see your profile, send messages, or appear in your matches.</div>
+            <BlockUserPanel/>
+          </div>
+          <div style={{padding:"12px 16px",background:"rgba(74,124,94,0.06)",borderRadius:12,border:"1.5px solid rgba(74,124,94,0.15)"}}>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:4,color:"var(--sage)"}}>✨ Open Access Platform</div>
+            <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.6}}>SuperNetworkAI requires no member vetting or approval. Anyone can create a profile and start connecting immediately. You control your visibility and who can reach you.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Block User Panel ──
+function BlockUserPanel() {
+  const [blockInput, setBlockInput] = useState("");
+  const [blocked, setBlocked] = useState([]);
+  const addBlock = () => {
+    const name = blockInput.trim();
+    if(name && !blocked.includes(name)) { setBlocked(b=>[...b,name]); setBlockInput(""); }
+  };
+  return (
+    <div>
+      <div style={{display:"flex",gap:8,marginBottom:blocked.length?10:0}}>
+        <input className="input" style={{fontSize:13}} placeholder="Enter name or username to block..."
+          value={blockInput} onChange={e=>setBlockInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addBlock()}/>
+        <button className="btn btn-sm" style={{background:"rgba(196,98,45,0.1)",color:"var(--terra)",border:"1px solid rgba(196,98,45,0.2)",fontWeight:700}} onClick={addBlock}>Block</button>
+      </div>
+      {blocked.length>0&&(
+        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+          {blocked.map(b=>(
+            <span key={b} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",background:"rgba(196,98,45,0.08)",border:"1px solid rgba(196,98,45,0.2)",borderRadius:20,fontSize:12,color:"var(--terra)",fontWeight:600}}>
+              🚫 {b}
+              <span style={{cursor:"pointer",opacity:0.6}} onClick={()=>setBlocked(bl=>bl.filter(x=>x!==b))}>×</span>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Fix: JS variables for CSS colors used in inline styles
+const var_terra = "#c4622d";
+const var_sage  = "#4a7c5e";
+const var_violet= "#7b5ea7";
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
