@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>SuperNetworkAI — AI Output Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&family=Cabinet+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+:root {
+  --cream:#faf7f2; --ink:#1a1208; --terra:#c4622d; --terra2:#e8825a;
+  --sage:#4a7c5e; --sage2:#6aab88; --gold:#d4a843; --violet:#7b5ea7;
+  --border:rgba(26,18,8,0.12); --muted:rgba(26,18,8,0.45);
+  --shadow:0 2px 20px rgba(26,18,8,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--cream);color:var(--ink);font-family:'Cabinet Grotesk',sans-serif;padding:40px 20px;min-height:100vh;}
+h1{font-family:'Fraunces',serif;font-size:32px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px;}
+.sub{color:var(--muted);font-size:15px;margin-bottom:32px;}
+.tabs{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
+.tab{padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-family:'Cabinet Grotesk',sans-serif;transition:all .2s;}
+.tab.active{background:var(--terra);color:#fff;border-color:var(--terra);}
+.api-row{display:flex;gap:10px;margin-bottom:24px;}
+.input{flex:1;padding:11px 14px;background:#fff;border:1.5px solid var(--border);border-radius:10px;color:var(--ink);font-size:14px;font-family:'Cabinet Grotesk',sans-serif;outline:none;transition:all .2s;}
+.input:focus{border-color:var(--terra);}
+.input::placeholder{color:var(--muted);}
+.btn{padding:10px 22px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;border:none;font-family:'Cabinet Grotesk',sans-serif;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.btn-primary{background:var(--terra);color:#fff;}
+.btn-primary:hover{background:#b0571f;}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-sage{background:var(--sage);color:#fff;}
+.btn-secondary{background:#fff;color:var(--ink);border:1.5px solid var(--border);}
+/* Result cards */
+.result-section{margin-bottom:32px;}
+.section-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.mcard{background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:22px;margin-bottom:14px;box-shadow:var(--shadow);transition:all .2s;}
+.mcard:hover{box-shadow:0 8px 40px rgba(26,18,8,0.12);}
+.mcard-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:12px;}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-family:'Fraunces',serif;flex-shrink:0;}
+.av-terra{background:linear-gradient(135deg,#c4622d,#e8825a);}
+.av-sage{background:linear-gradient(135deg,#4a7c5e,#6aab88);}
+.av-violet{background:linear-gradient(135deg,#7b5ea7,#a07dcf);}
+.av-gold{background:linear-gradient(135deg,#d4a843,#e8c068);}
+.av-brown{background:linear-gradient(135deg,#6b4f35,#9b7355);}
+.av-ink{background:linear-gradient(135deg,#1a1208,#2d2416);}
+.name{font-family:'Fraunces',serif;font-size:18px;font-weight:700;margin-bottom:3px;}
+.role{font-size:13px;color:var(--muted);}
+.score-badge{padding:8px 14px;border-radius:30px;background:linear-gradient(135deg,var(--terra),var(--terra2));color:#fff;font-family:'Fraunces',serif;font-size:22px;font-weight:700;flex-shrink:0;box-shadow:0 4px 12px rgba(196,98,45,0.3);text-align:center;line-height:1;}
+.score-badge span{display:block;font-size:9px;font-family:'Cabinet Grotesk',sans-serif;font-weight:600;opacity:.8;}
+.headline{font-weight:700;font-size:14px;margin-bottom:10px;color:var(--ink);}
+.ai-box{background:rgba(74,124,94,0.06);border:1px solid rgba(74,124,94,0.18);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:var(--sage);line-height:1.7;}
+.ai-lbl{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--sage2);margin-bottom:6px;text-transform:uppercase;}
+.strengths{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.strength{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(74,124,94,0.1);color:var(--sage);border:1px solid rgba(74,124,94,0.2);}
+.tags{display:flex;gap:6px;flex-wrap:wrap;}
+.tag{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#f2ede4;color:var(--muted);border:1px solid var(--border);}
+.tag-type{background:rgba(196,98,45,0.1);color:var(--terra);border:1px solid rgba(196,98,45,0.2);}
+.tag-sage{background:rgba(74,124,94,0.1);color:var(--sage);border:1px solid rgba(74,124,94,0.2);}
+.tag-gold{background:rgba(212,168,67,0.12);color:#a07820;border:1px solid rgba(212,168,67,0.25);}
+/* Statement */
+.statement-box{background:linear-gradient(135deg,rgba(196,98,45,0.07),rgba(212,168,67,0.05));border:1.5px solid rgba(196,98,45,0.2);border-radius:14px;padding:24px;margin-bottom:20px;}
+.statement-lbl{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--terra);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.statement-text{font-family:'Fraunces',serif;font-size:19px;font-weight:300;font-style:italic;line-height:1.8;color:var(--ink);}
+.tw-cursor{display:inline-block;width:2px;height:20px;background:var(--terra);margin-left:2px;vertical-align:middle;animation:blink .8s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+/* Search results */
+.scard{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--shadow);}
+.scard-body{flex:1;}
+.search-ai-box{background:rgba(74,124,94,0.06);border:1px solid rgba(74,124,94,0.15);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--sage);line-height:1.65;margin-top:8px;}
+/* Spinner */
+.spinner{width:20px;height:20px;border:2px solid rgba(196,98,45,0.2);border-top-color:var(--terra);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pulsing{animation:pulse 1.5s infinite;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .35s ease forwards;}
+/* Profile preview */
+.profile-preview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.pp-card{padding:12px;border-radius:10px;border:1px solid var(--border);background:#f2ede4;}
+.pp-lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;}
+.pp-val{font-size:12px;color:var(--ink);line-height:1.5;}
+/* Loading state */
+.loading-box{text-align:center;padding:48px;background:#fff;border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--shadow);}
+.empty-box{text-align:center;padding:48px;background:#fff;border:1.5px dashed var(--border);border-radius:16px;color:var(--muted);}
+.rank-num{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:#e8ddd0;width:36px;text-align:center;padding-top:4px;flex-shrink:0;}
+.rank-num.top{color:var(--terra);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef } = React;
+
+const AV = ["av-terra","av-sage","av-violet","av-gold","av-brown","av-ink"];
+const avC = id => AV[id.charCodeAt(id.length-1) % AV.length];
+
+const USER = {
+  name:"Swetha Sankar", role:"Founder", intent:"cofounder",
+  skills:["Product Management","UX Research","Go-to-Market","Figma"],
+  availability:"Full-time", workingStyle:"Async-first", location:"Chennai, India",
+  ikigai:{
+    love:"Building tech products that genuinely help people in tier-2 Indian cities access opportunities they never had before.",
+    good:"Product strategy, customer discovery, roadmapping, translating complex problems into simple user experiences.",
+    paid:"Product management, UX consulting, startup advisory, go-to-market strategy for early stage startups.",
+    need:"Affordable, accessible digital tools that bridge the opportunity gap between metro and non-metro India."
+  }
+};
+
+const PROFILES = [
+  { id:"p1", name:"Aria Patel", role:"Founder", location:"Bangalore, India",
+    ikigai:{ love:"Building products that make everyday tasks disappear. I love the moment users say 'this just works'.", good:"Product strategy, UX research, storytelling, turning ambiguous problems into clear roadmaps.", paid:"Product management, startup consulting, UX audits, go-to-market strategy.", need:"Tools that reduce cognitive overload for small business owners in emerging markets." },
+    skills:["Product Management","UX Research","Go-to-Market","Figma","Growth"], intent:"cofounder" },
+  { id:"p2", name:"Marcus Chen", role:"Engineer", location:"Singapore",
+    ikigai:{ love:"Writing elegant code and architecting systems that scale. Open source contributions energize me.", good:"Backend engineering, distributed systems, ML pipelines, mentoring junior devs.", paid:"Full-stack development, ML engineering, technical architecture, code reviews.", need:"Democratizing access to AI infrastructure for startups outside Silicon Valley." },
+    skills:["Python","Kubernetes","ML Ops","PostgreSQL","React","System Design"], intent:"cofounder" },
+  { id:"p3", name:"Zoe Williams", role:"Designer", location:"Lagos, Nigeria",
+    ikigai:{ love:"Visual storytelling and creating brand identities that make people feel something.", good:"UI/UX design, brand strategy, motion graphics, user research facilitation.", paid:"Product design, branding, design systems, pitch deck design, illustration.", need:"Authentic representation of African culture and aesthetics in global tech products." },
+    skills:["Figma","Brand Design","Motion","Design Systems","Illustration"], intent:"teammate" },
+  { id:"p4", name:"Rajan Mehta", role:"Investor", location:"Mumbai, India",
+    ikigai:{ love:"Finding contrarian ideas early. I love backing founders who see what others miss.", good:"Market analysis, deal sourcing, founder coaching, financial modeling.", paid:"Angel investing, advisory roles, fractional CFO, venture scouting.", need:"Transparent, founder-friendly capital for deep-tech startups in South Asia." },
+    skills:["Due Diligence","Financial Modeling","Fundraising","B2B Sales","Venture"], intent:"client" },
+  { id:"p5", name:"Lena Schwarz", role:"AI Researcher", location:"Berlin, Germany",
+    ikigai:{ love:"Pushing the boundaries of what AI can understand. Elegant mathematical formulations excite me.", good:"NLP, fine-tuning LLMs, writing research papers, bridging academia and industry.", paid:"Applied AI research, model optimization, LLM consulting, technical writing.", need:"AI systems that are explainable, fair, and work as well for minority languages." },
+    skills:["PyTorch","NLP","LLM Fine-tuning","Research","Python","Transformers"], intent:"teammate" },
+  { id:"p6", name:"Dayo Okonkwo", role:"Growth Marketer", location:"Accra, Ghana",
+    ikigai:{ love:"Cracking distribution puzzles. Nothing excites me more than a campaign that 10x's in a week.", good:"Growth hacking, SEO/SEM, community building, viral loops, copywriting.", paid:"Growth consulting, performance marketing, content strategy, partnerships.", need:"African startups that deserve global attention but lack the distribution know-how." },
+    skills:["Growth Hacking","SEO","Community","Copywriting","Analytics","Partnerships"], intent:"cofounder" },
+];
+
+function App() {
+  const [tab, setTab] = useState("matches");
+  const [apiKey, setApiKey] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const [matches, setMatches] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const [statement, setStatement] = useState("");
+  const [typewritten, setTypewritten] = useState("");
+  const [generating, setGenerating] = useState(false);
+
+  const callClaude = async (prompt, maxTokens=2000) => {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:maxTokens,messages:[{role:"user",content:prompt}]})
+    });
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message);
+    return d.content[0].text;
+  };
+
+  const typewrite = (text, setter) => {
+    setter(""); let i=0;
+    const tick=()=>{ if(i<=text.length){setter(text.slice(0,i));i++;setTimeout(tick,18);} };
+    tick();
+  };
+
+  const runMatches = async () => {
+    if(!apiKey){alert("Please enter your Anthropic API key first.");return;}
+    setLoading(true); setMatches(null);
+    try {
+      const prompt = `You are an expert startup networking AI. Analyse these profiles and match them with the current user.
+
+CURRENT USER (Swetha Sankar):
+${JSON.stringify(USER, null, 2)}
+
+NETWORK PROFILES:
+${JSON.stringify(PROFILES.map(p=>({id:p.id,name:p.name,role:p.role,location:p.location,intent:p.intent,skills:p.skills,ikigai:p.ikigai})), null, 2)}
+
+For each profile, deeply analyse:
+1. Ikigai alignment — do their passions and missions semantically complement Swetha's?
+2. Skill complementarity — do they fill her gaps (she needs: engineering, AI/ML, growth)?
+3. Geographic/cultural synergy for Indian market focus
+4. Intent compatibility
+
+Return a JSON array sorted by score (highest first). Each object must have:
+- id (string)
+- score (integer 0-100)
+- matchType ("cofounder" | "teammate" | "client")
+- headline (one punchy sentence explaining the match)
+- explanation (exactly 3 sentences: sentence 1 on ikigai synergy, sentence 2 on skill fit, sentence 3 on working dynamic)
+- strengths (array of exactly 3 specific synergy points, each under 8 words)
+
+Return ONLY valid JSON. No markdown, no extra text.`;
+
+      const text = await callClaude(prompt, 2000);
+      const parsed = JSON.parse(text.replace(/```json|```/g,"").trim());
+      setMatches(parsed.map(m=>({...PROFILES.find(p=>p.id===m.id),...m})).filter(p=>p.name));
+    } catch(e){ alert("Error: "+e.message); }
+    setLoading(false);
+  };
+
+  const runSearch = async () => {
+    if(!apiKey){alert("Please enter your Anthropic API key first.");return;}
+    if(!searchQuery.trim()){alert("Enter a search query.");return;}
+    setLoading(true); setSearchResults(null);
+    try {
+      const prompt = `You are a networking search AI. The user is searching for: "${searchQuery}"
+
+Available profiles:
+${JSON.stringify(PROFILES.map(p=>({id:p.id,name:p.name,role:p.role,location:p.location,skills:p.skills,ikigai:p.ikigai,intent:p.intent})), null, 2)}
+
+Find profiles that semantically match the search intent. Consider skills, ikigai, role, and mission alignment.
+Return a JSON array of matches (only those with score > 40), sorted by relevance score.
+Each object: { id, score (0-100), explanation (2 sentences why they match the search) }
+Return ONLY valid JSON. No markdown.`;
+
+      const text = await callClaude(prompt, 800);
+      const parsed = JSON.parse(text.replace(/```json|```/g,"").trim());
+      setSearchResults(parsed.map(m=>({...PROFILES.find(p=>p.id===m.id),...m})).filter(p=>p.name));
+    } catch(e){ alert("Error: "+e.message); }
+    setLoading(false);
+  };
+
+  const runStatement = async () => {
+    if(!apiKey){alert("Please enter your Anthropic API key first.");return;}
+    setGenerating(true); setStatement(""); setTypewritten("");
+    try {
+      const prompt = `Write ONE poetic, personal Ikigai statement in first person for this person. Under 40 words. No quotes or preamble. Make it specific to their context.
+
+What I love: ${USER.ikigai.love}
+What I'm good at: ${USER.ikigai.good}
+What I can be paid for: ${USER.ikigai.paid}
+What the world needs: ${USER.ikigai.need}
+Role: ${USER.role}, Location: ${USER.location}`;
+
+      const text = await callClaude(prompt, 100);
+      const s = text.trim().replace(/^[""]|[""]$/g,"");
+      setStatement(s); typewrite(s, setTypewritten);
+    } catch(e){ alert("Error: "+e.message); }
+    setGenerating(false);
+  };
+
+  const typeColors = {cofounder:"tag-type",teammate:"tag-sage",client:"tag-gold"};
+  const typeLabels = {cofounder:"🤝 Cofounder",teammate:"👥 Teammate",client:"💼 Client"};
+
+  return (
+    <div style={{maxWidth:820,margin:"0 auto"}}>
+      <h1>SuperNetworkAI — Live AI Demo</h1>
+      <div className="sub">See exactly what Claude outputs for each feature. Uses real Anthropic API calls.</div>
+
+      {/* API Key */}
+      <div className="api-row">
+        <input className="input" type="password" placeholder="🔑 Paste your Anthropic API key (sk-ant-...) to run live demos"
+          value={apiKey} onChange={e=>setApiKey(e.target.value)}/>
+      </div>
+
+      {/* User context */}
+      <div style={{background:"rgba(196,98,45,0.06)",border:"1.5px solid rgba(196,98,45,0.18)",borderRadius:14,padding:16,marginBottom:24,fontSize:13}}>
+        <div style={{fontWeight:800,color:"var(--terra)",marginBottom:8,fontSize:11,letterSpacing:"0.08em"}}>🧑 DEMO USER PROFILE (Swetha Sankar — Chennai, India)</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          {[["❤️ Loves","Building tech for tier-2 India"],["⭐ Good At","Product, UX, Go-to-Market"],["💰 Paid For","PM consulting, UX audits"],["🌍 World Needs","Bridge metro/non-metro opportunity gap"]].map(([l,v])=>(
+            <div key={l} style={{background:"#fff",borderRadius:8,padding:"8px 10px",border:"1px solid var(--border)"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--terra)",marginBottom:2}}>{l}</div>
+              <div style={{fontSize:12,color:"var(--ink)"}}>{v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="tabs">
+        <button className={`tab${tab==="matches"?" active":""}`} onClick={()=>setTab("matches")}>✨ AI Match Generation</button>
+        <button className={`tab${tab==="search"?" active":""}`} onClick={()=>setTab("search")}>🔍 Natural Language Search</button>
+        <button className={`tab${tab==="statement"?" active":""}`} onClick={()=>setTab("statement")}>🌟 Ikigai Statement</button>
+      </div>
+
+      {/* TAB: Matches */}
+      {tab==="matches"&&(
+        <div className="fade-up">
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+            <div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700}}>AI Match Generation</div>
+              <div style={{fontSize:13,color:"var(--muted)",marginTop:2}}>Claude ranks all 6 profiles against Swetha's Ikigai with scores + explanations</div>
+            </div>
+            <button className="btn btn-primary" onClick={runMatches} disabled={loading||!apiKey}>
+              {loading?<><span className="spinner"></span> Analysing...</>:"✨ Generate Matches"}
+            </button>
+          </div>
+          {loading&&(
+            <div className="loading-box">
+              <div className="spinner" style={{width:36,height:36,margin:"0 auto 14px"}}></div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,marginBottom:6}} className="pulsing">Analysing Ikigai alignment...</div>
+              <div style={{fontSize:13,color:"var(--muted)"}}>Claude is comparing all 6 profiles across 4 dimensions</div>
+            </div>
+          )}
+          {!matches&&!loading&&(
+            <div className="empty-box">
+              <div style={{fontSize:40,marginBottom:12}}>🧠</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:8}}>Ready to generate matches</div>
+              <div style={{fontSize:13}}>Add your API key above and click Generate Matches to see real Claude output</div>
+            </div>
+          )}
+          {matches&&matches.map((p,i)=>(
+            <div key={p.id} className="mcard fade-up">
+              <div style={{display:"flex",gap:16,alignItems:"flex-start"}}>
+                <div className={`rank-num${i<3?" top":""}`}>#{i+1}</div>
+                <div className={`avatar ${avC(p.id)}`} style={{width:52,height:52,fontSize:18,flexShrink:0}}>{p.name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+                <div style={{flex:1}}>
+                  <div className="mcard-header" style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:10}}>
+                    <div style={{flex:1}}>
+                      <div className="name">{p.name}</div>
+                      <div className="role">{p.role} · {p.location}</div>
+                      <div style={{marginTop:6,display:"flex",gap:6}}>
+                        <span className={`tag ${typeColors[p.matchType]||"tag"}`}>{typeLabels[p.matchType]}</span>
+                      </div>
+                    </div>
+                    <div className="score-badge" style={{background:p.score>=80?"linear-gradient(135deg,var(--sage),var(--sage2))":p.score>=65?"linear-gradient(135deg,var(--terra),var(--terra2))":"linear-gradient(135deg,var(--gold),#e8c068)"}}>
+                      {p.score}<span>/ 100</span>
+                    </div>
+                  </div>
+                  {p.headline&&<div className="headline">"{p.headline}"</div>}
+                  <div className="ai-box">
+                    <div className="ai-lbl">✨ Match Analysis</div>
+                    {p.explanation}
+                  </div>
+                  {p.strengths&&(
+                    <div className="strengths">
+                      {p.strengths.map((s,j)=><span key={j} className="strength">✓ {s}</span>)}
+                    </div>
+                  )}
+                  <div className="tags">
+                    {p.skills?.slice(0,5).map(s=><span key={s} className="tag">{s}</span>)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* TAB: Search */}
+      {tab==="search"&&(
+        <div className="fade-up">
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:4}}>Natural Language Search</div>
+          <div style={{fontSize:13,color:"var(--muted)",marginBottom:16}}>Type anything — Claude interprets intent and ranks profiles semantically</div>
+          <div style={{display:"flex",gap:10,marginBottom:20}}>
+            <input className="input" placeholder='e.g. "technical cofounder who loves AI for social good" or "growth marketer for Indian market"'
+              value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&runSearch()}/>
+            <button className="btn btn-primary" onClick={runSearch} disabled={loading||!apiKey}>
+              {loading?"Searching...":"✨ Search"}
+            </button>
+          </div>
+          {/* Example queries */}
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--muted)",letterSpacing:"0.08em",marginBottom:8}}>TRY THESE EXAMPLES:</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              {["technical cofounder passionate about AI infrastructure","designer who understands emerging markets","investor focused on South Asian startups","growth expert for consumer apps"].map(q=>(
+                <button key={q} className="btn btn-secondary" style={{fontSize:12,padding:"6px 12px",borderRadius:20}}
+                  onClick={()=>setSearchQuery(q)}>"{q}"</button>
+              ))}
+            </div>
+          </div>
+          {loading&&<div className="loading-box"><div className="spinner" style={{width:32,height:32,margin:"0 auto 12px"}}></div><div className="pulsing" style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700}}>Searching semantically...</div></div>}
+          {!searchResults&&!loading&&(
+            <div className="empty-box">
+              <div style={{fontSize:40,marginBottom:12}}>🔍</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:8}}>Try a search above</div>
+              <div style={{fontSize:13}}>Click one of the example queries or type your own</div>
+            </div>
+          )}
+          {searchResults&&(
+            <>
+              <div style={{fontSize:13,color:"var(--sage)",fontWeight:700,marginBottom:14}}>✅ Found {searchResults.length} matches for "{searchQuery}"</div>
+              {searchResults.map((p,i)=>(
+                <div key={p.id} className="scard fade-up">
+                  <div className={`avatar ${avC(p.id)}`} style={{width:48,height:48,fontSize:16,flexShrink:0}}>{p.name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+                  <div className="scard-body">
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                      <div className="name" style={{fontSize:16}}>{p.name}</div>
+                      <div style={{marginLeft:"auto",fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,color:p.score>=80?"var(--sage)":p.score>=60?"var(--terra)":"var(--gold)"}}>{p.score}</div>
+                    </div>
+                    <div className="role" style={{marginBottom:8}}>{p.role} · {p.location}</div>
+                    <div className="search-ai-box">
+                      <div className="ai-lbl">✨ Why they match your search</div>
+                      {p.explanation}
+                    </div>
+                    <div className="tags" style={{marginTop:8}}>
+                      {p.skills?.slice(0,4).map(s=><span key={s} className="tag">{s}</span>)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* TAB: Statement */}
+      {tab==="statement"&&(
+        <div className="fade-up">
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:4}}>AI Ikigai Statement</div>
+          <div style={{fontSize:13,color:"var(--muted)",marginBottom:20}}>Claude generates a personal, poetic Ikigai statement from the 4 answers. Typewritten live.</div>
+          <div style={{background:"rgba(74,124,94,0.06)",border:"1.5px solid rgba(74,124,94,0.18)",borderRadius:12,padding:16,marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--sage)",marginBottom:10,letterSpacing:"0.08em"}}>INPUT — SWETHA'S IKIGAI ANSWERS</div>
+            <div className="profile-preview">
+              {[
+                {l:"❤️ What I Love",v:USER.ikigai.love,c:"#c4622d"},
+                {l:"⭐ What I'm Good At",v:USER.ikigai.good,c:"#a07820"},
+                {l:"💰 Can Be Paid For",v:USER.ikigai.paid,c:"#4a7c5e"},
+                {l:"🌍 World Needs",v:USER.ikigai.need,c:"#7b5ea7"},
+              ].map(q=>(
+                <div key={q.l} className="pp-card">
+                  <div className="pp-lbl" style={{color:q.c}}>{q.l}</div>
+                  <div className="pp-val">{q.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{textAlign:"center",marginBottom:24}}>
+            <button className="btn btn-primary" onClick={runStatement} disabled={generating||!apiKey} style={{padding:"12px 28px",fontSize:15}}>
+              {generating?<><span className="spinner"></span> Generating...</>:"✨ Generate Ikigai Statement"}
+            </button>
+          </div>
+          {(statement||generating)&&(
+            <div className="statement-box">
+              <div className="statement-lbl">✨ AI-Generated Ikigai Statement</div>
+              {generating&&!typewritten
+                ? <div style={{color:"var(--muted)",fontSize:14,fontStyle:"italic"}} className="pulsing">Weaving your purpose together...</div>
+                : <div className="statement-text">
+                    {typewritten||statement}
+                    {typewritten&&typewritten.length<(statement||"x").length&&<span className="tw-cursor"/>}
+                  </div>
+              }
+            </div>
+          )}
+          {!statement&&!generating&&(
+            <div className="empty-box">
+              <div style={{fontSize:40,marginBottom:12}}>🌟</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:8}}>Ready to generate</div>
+              <div style={{fontSize:13}}>Add your API key and click generate to see Claude craft a personal statement</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div style={{marginTop:40,padding:"16px 20px",background:"rgba(196,98,45,0.05)",borderRadius:12,border:"1px solid rgba(196,98,45,0.15)",fontSize:13,color:"var(--muted)"}}>
+        💡 <strong style={{color:"var(--terra)"}}>Cost note:</strong> Each demo run costs less than $0.01 in API credits. Anthropic gives free credits on signup.
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
